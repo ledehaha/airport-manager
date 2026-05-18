@@ -2,7 +2,7 @@
 
 基于 Cloudflare Workers + Pages + D1 数据库的一站式机场订阅管理系统
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ledeha/airport-manager)
+
 
 ## ✨ 功能特性
 

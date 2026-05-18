@@ -102,12 +102,16 @@ wrangler d1 execute airport_db --file=./schema.sql
 const API_BASE = '';
 ```
 
-修改为：
+修改为你的后端实际地址：
 ```javascript
-const API_BASE = 'https://airport-manager-api.你的用户名.workers.dev';
+const API_BASE = 'https://你的后端域名.workers.dev';
 ```
 
-> 💡 你也可以等后端部署完成后，拿到地址再修改。
+> 💡 **重要说明**：
+> - 部署后端后，Cloudflare 会自动分配一个类似 `airport-manager-api.xxx.workers.dev` 的域名
+> - Pages 前端也会获得类似 `airport-manager-xxx.pages.dev` 的域名
+> - 具体域名以你部署后 Cloudflare 显示为准，不要直接照抄示例
+> - 建议等后端部署成功后，拿到实际地址再修改这行
 
 ---
 
