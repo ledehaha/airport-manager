@@ -1,0 +1,21 @@
+{
+  "name": "airport-manager-frontend",
+  "version": "1.0.0",
+  "description": "机场节点管理系统 - 前端页面",
+  "scripts": {
+    "deploy": "wrangler pages deploy dist --project-name=airport-manager",
+    "preview": "wrangler pages dev dist"
+  },
+  "devDependencies": {
+    "wrangler": "^3.52.0"
+  },
+  "keywords": [
+    "cloudflare",
+    "pages",
+    "airport",
+    "v2ray",
+    "subscription"
+  ],
+  "author": "",
+  "license": "MIT"
+}

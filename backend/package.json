@@ -1,0 +1,29 @@
+{
+  "name": "airport-manager-api",
+  "version": "1.0.0",
+  "description": "机场节点管理系统 - 后端 API",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "init-db": "wrangler d1 execute airport_db --file=./schema.sql",
+    "preview-db": "wrangler d1 execute airport_db --remote --command \"SELECT * FROM nodes\""
+  },
+  "dependencies": {
+    "hono": "^4.2.7"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240405.0",
+    "typescript": "^5.4.5",
+    "wrangler": "^3.52.0"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "airport",
+    "v2ray",
+    "subscription"
+  ],
+  "author": "",
+  "license": "MIT"
+}

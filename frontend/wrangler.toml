@@ -1,0 +1,18 @@
+# ==========================================
+# 机场节点管理系统 - 前端配置
+# ==========================================
+
+name = "airport-manager-frontend"
+compatibility_date = "2024-04-05"
+pages_build_output_dir = "dist"
+
+# ==========================================
+# Pages 项目配置
+# ==========================================
+# 首次部署前需要在 Cloudflare 控制台创建 Pages 项目
+# 项目名: airport-manager
+# ==========================================
+
+[vars]
+# 后端 API 地址（部署后修改为你的 Workers 地址）
+# API_BASE = "https://airport-manager-api.xxx.workers.dev"

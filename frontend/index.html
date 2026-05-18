@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✈️ 机场节点管理系统</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            secondary: '#8B5CF6',
+            success: '#10B981',
+            danger: '#EF4444',
+            warning: '#F59E0B',
+            dark: {
+              100: '#374151',
+              200: '#1F2937',
+              300: '#111827',
+              400: '#0F172A',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .glass {
+        background: rgba(31, 41, 55, 0.7);
+        backdrop-filter: blur(10px);
+      }
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-dark-400 via-dark-300 to-dark-200 min-h-screen text-white">
+
+  <!-- ========================================== -->
+  <!-- 登录页面 -->
+  <!-- ========================================== -->
+  <div id="loginPage" class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/20 mb-4">
+          <i class="fa fa-paper-plane text-4xl text-primary"></i>
+        </div>
+        <h1 class="text-3xl font-bold text-white mb-2">机场节点管理系统</h1>
+        <p class="text-gray-400">登录以管理您的节点</p>
+      </div>
+
+      <div class="glass rounded-2xl p-8 shadow-2xl border border-gray-700">
+        <form id="loginForm" class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              <i class="fa fa-user mr-2"></i>用户名
+            </label>
+            <input 
+              type="text" 
+              id="username" 
+              class="w-full px-4 py-3 bg-dark-100 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              placeholder="请输入用户名"
+              value="admin"
+            >
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              <i class="fa fa-lock mr-2"></i>密码
+            </label>
+            <input 
+              type="password" 
+              id="password" 
+              class="w-full px-4 py-3 bg-dark-100 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              placeholder="请输入密码"
+              value="admin123"
+            >
+          </div>
+
+          <button 
+            type="submit" 
+            id="loginBtn"
+            class="w-full py-3 bg-primary hover:bg-blue-600 rounded-xl font-semibold transition flex items-center justify-center"
+          >
+            <i class="fa fa-sign-in mr-2"></i>登 录
+          </button>
+        </form>
+
+        <div class="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+          <p class="text-yellow-400 text-sm">
+            <i class="fa fa-info-circle mr-2"></i>
+            默认账号: admin / admin123
+            <br>
+            <span class="text-xs">登录后请立即修改密码！</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 管理面板 -->
+  <!-- ========================================== -->
+  <div id="adminPanel" class="hidden">
+    
+    <!-- 顶部导航 -->
+    <nav class="glass sticky top-0 z-50 border-b border-gray-700">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center">
+            <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center mr-3">
+              <i class="fa fa-paper-plane text-primary text-xl"></i>
+            </div>
+            <h1 class="text-xl font-bold">节点管理系统</h1>
+          </div>
+          
+          <div class="flex items-center space-x-4">
+            <button id="changePwdBtn" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition text-sm">
+              <i class="fa fa-key mr-2"></i>修改密码
+            </button>
+            <button id="logoutBtn" class="px-4 py-2 bg-danger hover:bg-red-600 rounded-lg transition">
+              <i class="fa fa-sign-out mr-2"></i>退出
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      
+      <!-- 统计卡片 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="glass rounded-2xl p-6 border border-gray-700 card-hover">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-400 text-sm">节点总数</p>
+              <h3 id="totalNodes" class="text-3xl font-bold mt-1">0</h3>
+            </div>
+            <div class="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center">
+              <i class="fa fa-server text-2xl text-blue-400"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl p-6 border border-gray-700 card-hover">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-400 text-sm">已启用</p>
+              <h3 id="enabledNodes" class="text-3xl font-bold mt-1">0</h3>
+            </div>
+            <div class="w-14 h-14 rounded-full bg-green-500/20 flex items-center justify-center">
+              <i class="fa fa-check-circle text-2xl text-green-400"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl p-6 border border-gray-700 card-hover">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-400 text-sm">已禁用</p>
+              <h3 id="disabledNodes" class="text-3xl font-bold mt-1">0</h3>
+            </div>
+            <div class="w-14 h-14 rounded-full bg-red-500/20 flex items-center justify-center">
+              <i class="fa fa-ban text-2xl text-red-400"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 订阅信息卡片 -->
+      <div class="glass rounded-2xl p-6 border border-gray-700 mb-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div class="flex-1">
+            <h2 class="text-lg font-semibold mb-2 flex items-center">
+              <i class="fa fa-link mr-2 text-primary"></i>订阅链接
+            </h2>
+            <p class="text-gray-400 text-sm mb-3">复制此链接到 V2RayN、Clash 等客户端使用</p>
+            <div class="flex items-center">
+              <code id="subUrl" class="flex-1 bg-dark-100 px-4 py-2 rounded-lg text-sm text-green-400 break-all">
+                点击下方按钮显示
+              </code>
+            </div>
+          </div>
+          <div class="flex space-x-3">
+            <button id="copySubBtn" class="px-6 py-3 bg-success hover:bg-green-600 rounded-xl transition flex items-center">
+              <i class="fa fa-copy mr-2"></i>复制链接
+            </button>
+            <button id="refreshSubBtn" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-xl transition">
+              <i class="fa fa-refresh"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 操作栏 -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h2 class="text-xl font-semibold flex items-center">
+          <i class="fa fa-list mr-2 text-primary"></i>节点列表
+        </h2>
+        <div class="flex space-x-3">
+          <div class="relative">
+            <input 
+              type="text" 
+              id="searchInput" 
+              placeholder="搜索节点..." 
+              class="pl-10 pr-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition w-48"
+            >
+            <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          </div>
+          <button id="addNodeBtn" class="px-5 py-2 bg-primary hover:bg-blue-600 rounded-lg transition flex items-center">
+            <i class="fa fa-plus mr-2"></i>添加节点
+          </button>
+        </div>
+      </div>
+
+      <!-- 节点列表 -->
+      <div id="nodesList" class="space-y-4">
+        <!-- 节点卡片会动态生成 -->
+        <div class="text-center py-12 text-gray-400">
+          <i class="fa fa-inbox text-4xl mb-4"></i>
+          <p>暂无节点，点击上方按钮添加</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 添加/编辑节点模态框 -->
+  <!-- ========================================== -->
+  <div id="nodeModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="glass rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-gray-700">
+      <div class="p-6 border-b border-gray-700">
+        <div class="flex items-center justify-between">
+          <h3 id="modalTitle" class="text-xl font-bold">添加节点</h3>
+          <button id="closeModalBtn" class="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 transition flex items-center justify-center">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <form id="nodeForm" class="p-6 space-y-6">
+        <input type="hidden" id="nodeId">
+
+        <!-- 基础信息 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              <i class="fa fa-tag mr-1"></i>节点名称
+            </label>
+            <input 
+              type="text" 
+              id="nodeName" 
+              required 
+              class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              placeholder="如: 香港-1Gbps"
+            >
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              <i class="fa fa-exchange mr-1"></i>协议类型
+            </label>
+            <select 
+              id="nodeType" 
+              class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            >
+              <option value="vmess">VMess</option>
+              <option value="vless">VLESS</option>
+              <option value="trojan">Trojan</option>
+              <option value="ss">Shadowsocks</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 服务器信息 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              <i class="fa fa-server mr-1"></i>服务器地址
+            </label>
+            <input 
+              type="text" 
+              id="nodeServer" 
+              required 
+              class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              placeholder="如: hk1.example.com"
+            >
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              <i class="fa fa-plug mr-1"></i>端口
+            </label>
+            <input 
+              type="number" 
+              id="nodePort" 
+              required 
+              class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              placeholder="如: 443"
+            >
+          </div>
+        </div>
+
+        <!-- 协议特有字段 - UUID 相关 -->
+        <div id="uuidFields">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                <i class="fa fa-key mr-1"></i>UUID
+              </label>
+              <input 
+                type="text" 
+                id="nodeUuid" 
+                class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition font-mono"
+                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+              >
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                <i class="fa fa-lock mr-1"></i>加密方式
+              </label>
+              <input 
+                type="text" 
+                id="nodeEncryption" 
+                value="auto"
+                class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- 协议特有字段 - 密码相关 -->
+        <div id="passwordFields" class="hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                <i class="fa fa-key mr-1"></i>密码
+              </label>
+              <input 
+                type="text" 
+                id="nodePassword" 
+                class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                placeholder="节点密码"
+              >
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                <i class="fa fa-shield mr-1"></i>加密方法
+              </label>
+              <input 
+                type="text" 
+                id="nodeSsEncryption" 
+                value="aes-256-gcm"
+                class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- 传输配置 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              <i class="fa fa-exchange mr-1"></i>传输协议
+            </label>
+            <select 
+              id="nodeNetwork" 
+              class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            >
+              <option value="tcp">TCP</option>
+              <option value="ws">WebSocket (WS)</option>
+              <option value="http">HTTP/2</option>
+              <option value="grpc">gRPC</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              <i class="fa fa-shield mr-1"></i>TLS
+            </label>
+            <select 
+              id="nodeTls" 
+              class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            >
+              <option value="none">不开启</option>
+              <option value="tls">TLS</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 高级配置 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              <i class="fa fa-globe mr-1"></i>SNI
+            </label>
+            <input 
+              type="text" 
+              id="nodeSni" 
+              class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              placeholder="如: cloudfront.net"
+            >
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              <i class="fa fa-home mr-1"></i>Host
+            </label>
+            <input 
+              type="text" 
+              id="nodeHost" 
+              class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              placeholder="域名伪装"
+            >
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              <i class="fa fa-link mr-1"></i>Path (WS路径)
+            </label>
+            <input 
+              type="text" 
+              id="nodePath" 
+              class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              placeholder="如: /api/v1"
+            >
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              <i class="fa fa-sort mr-1"></i>排序
+            </label>
+            <input 
+              type="number" 
+              id="nodeSort" 
+              value="0"
+              class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              placeholder="数字越小越靠前"
+            >
+          </div>
+        </div>
+
+        <!-- 备注 -->
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            <i class="fa fa-sticky-note mr-1"></i>备注
+          </label>
+          <input 
+            type="text" 
+            id="nodeRemarks" 
+            class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            placeholder="节点说明（可选）"
+          >
+        </div>
+
+        <!-- 启用开关 -->
+        <div class="flex items-center">
+          <input type="checkbox" id="nodeEnabled" checked class="w-5 h-5 text-primary focus:ring-primary border-gray-600 rounded">
+          <label for="nodeEnabled" class="ml-2 text-gray-300">启用该节点</label>
+        </div>
+
+        <!-- 提交按钮 -->
+        <div class="flex justify-end space-x-4 pt-4 border-t border-gray-700">
+          <button 
+            type="button" 
+            id="cancelBtn" 
+            class="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition"
+          >
+            取消
+          </button>
+          <button 
+            type="submit" 
+            id="saveBtn"
+            class="px-6 py-2 bg-primary hover:bg-blue-600 rounded-lg transition flex items-center"
+          >
+            <i class="fa fa-save mr-2"></i>保存
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 修改密码模态框 -->
+  <!-- ========================================== -->
+  <div id="pwdModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="glass rounded-2xl w-full max-w-md border border-gray-700">
+      <div class="p-6 border-b border-gray-700">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xl font-bold">修改密码</h3>
+          <button id="closePwdModalBtn" class="w-10 h-10 rounded-lg bg-gray-700 hover:bg-gray-600 transition flex items-center justify-center">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <form id="pwdForm" class="p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">旧密码</label>
+          <input 
+            type="password" 
+            id="oldPassword" 
+            required 
+            class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            placeholder="请输入旧密码"
+          >
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">新密码</label>
+          <input 
+            type="password" 
+            id="newPassword" 
+            required 
+            class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            placeholder="至少6位"
+          >
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">确认新密码</label>
+          <input 
+            type="password" 
+            id="confirmPassword" 
+            required 
+            class="w-full px-4 py-2 bg-dark-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            placeholder="再次输入新密码"
+          >
+        </div>
+
+        <div class="flex justify-end space-x-4 pt-4 border-t border-gray-700">
+          <button 
+            type="button" 
+            id="cancelPwdBtn" 
+            class="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition"
+          >
+            取消
+          </button>
+          <button 
+            type="submit" 
+            class="px-6 py-2 bg-primary hover:bg-blue-600 rounded-lg transition"
+          >
+            确认修改
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- Toast 提示 -->
+  <!-- ========================================== -->
+  <div id="toast" class="fixed bottom-6 right-6 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <div class="glass px-6 py-4 rounded-xl border border-gray-700 shadow-2xl flex items-center">
+      <i id="toastIcon" class="fa fa-check-circle text-success mr-3 text-xl"></i>
+      <span id="toastMessage" class="text-gray-200">操作成功</span>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- JavaScript -->
+  <!-- ========================================== -->
+  <script>
+    // ==========================================
+    // 配置
+    // ==========================================
+    // 部署后请修改为你的 Workers 地址
+    const API_BASE = '';
+    
+    let TOKEN = localStorage.getItem('token');
+    let ALL_NODES = [];
+
+    // ==========================================
+    // DOM 元素
+    // ==========================================
+    const loginPage = document.getElementById('loginPage');
+    const adminPanel = document.getElementById('adminPanel');
+    const loginForm = document.getElementById('loginForm');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const nodesList = document.getElementById('nodesList');
+    const addNodeBtn = document.getElementById('addNodeBtn');
+    const nodeModal = document.getElementById('nodeModal');
+    const nodeForm = document.getElementById('nodeForm');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const copySubBtn = document.getElementById('copySubBtn');
+    const subUrl = document.getElementById('subUrl');
+    const refreshSubBtn = document.getElementById('refreshSubBtn');
+    const searchInput = document.getElementById('searchInput');
+    const changePwdBtn = document.getElementById('changePwdBtn');
+    const pwdModal = document.getElementById('pwdModal');
+    const pwdForm = document.getElementById('pwdForm');
+    const closePwdModalBtn = document.getElementById('closePwdModalBtn');
+    const cancelPwdBtn = document.getElementById('cancelPwdBtn');
+    const nodeTypeSelect = document.getElementById('nodeType');
+
+    // ==========================================
+    // 工具函数
+    // ==========================================
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastIcon = document.getElementById('toastIcon');
+      const toastMessage = document.getElementById('toastMessage');
+
+      toastMessage.textContent = message;
+      
+      if (type === 'success') {
+        toastIcon.className = 'fa fa-check-circle text-success mr-3 text-xl';
+      } else if (type === 'error') {
+        toastIcon.className = 'fa fa-times-circle text-danger mr-3 text-xl';
+      } else if (type === 'warning') {
+        toastIcon.className = 'fa fa-exclamation-triangle text-warning mr-3 text-xl';
+      }
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    function getProtocolColor(type) {
+      const colors = {
+        vmess: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+        vless: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+        trojan: 'bg-green-500/20 text-green-400 border-green-500/30',
+        ss: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+      };
+      return colors[type] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    }
+
+    function getProtocolName(type) {
+      const names = { vmess: 'VMess', vless: 'VLESS', trojan: 'Trojan', ss: 'SS' };
+      return names[type] || type.toUpperCase();
+    }
+
+    // ==========================================
+    // API 请求封装
+    // ==========================================
+    async function apiRequest(url, options = {}) {
+      const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers
+      };
+      
+      if (TOKEN) {
+        headers['Authorization'] = `Bearer ${TOKEN}`;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}${url}`, {
+          ...options,
+          headers
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            localStorage.removeItem('token');
+            TOKEN = null;
+            showAdmin();
+            showToast('登录已过期，请重新登录', 'error');
+            return null;
+          }
+          throw new Error(data.error || '请求失败');
+        }
+
+        return data;
+      } catch (err) {
+        console.error('API Error:', err);
+        showToast(err.message, 'error');
+        throw err;
+      }
+    }
+
+    // ==========================================
+    // 认证相关
+    // ==========================================
+    function showAdmin() {
+      if (TOKEN) {
+        loginPage.classList.add('hidden');
+        adminPanel.classList.remove('hidden');
+        loadNodes();
+        loadSubInfo();
+      } else {
+        loginPage.classList.remove('hidden');
+        adminPanel.classList.add('hidden');
+      }
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const loginBtn = document.getElementById('loginBtn');
+
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>登录中...';
+
+      try {
+        const data = await apiRequest('/api/login', {
+          method: 'POST',
+          body: JSON.stringify({ username, password })
+        });
+
+        if (data) {
+          TOKEN = data.token;
+          localStorage.setItem('token', TOKEN);
+          showToast('登录成功');
+          showAdmin();
+        }
+      } catch (err) {
+        // 错误已经在 apiRequest 中处理
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '<i class="fa fa-sign-in mr-2"></i>登 录';
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('token');
+      TOKEN = null;
+      showAdmin();
+      showToast('已退出登录', 'warning');
+    });
+
+    // ==========================================
+    // 节点管理
+    // ==========================================
+    async function loadNodes() {
+      try {
+        const data = await apiRequest('/api/nodes');
+        if (data) {
+          ALL_NODES = data.data || [];
+          renderNodes(ALL_NODES);
+          updateStats(ALL_NODES);
+        }
+      } catch (err) {
+        console.error('加载节点失败:', err);
+      }
+    }
+
+    function renderNodes(nodes) {
+      if (nodes.length === 0) {
+        nodesList.innerHTML = `
+          <div class="text-center py-16 text-gray-400">
+            <i class="fa fa-inbox text-5xl mb-4 opacity-50"></i>
+            <p class="text-lg">暂无节点</p>
+            <p class="text-sm mt-2">点击上方按钮添加第一个节点</p>
+          </div>
+        `;
+        return;
+      }
+
+      nodesList.innerHTML = nodes.map(node => `
+        <div class="glass rounded-2xl p-6 border border-gray-700 card-hover">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex-1">
+              <div class="flex items-center flex-wrap gap-3 mb-3">
+                <span class="px-3 py-1 rounded-full text-xs font-medium border ${getProtocolColor(node.type)}">
+                  ${getProtocolName(node.type)}
+                </span>
+                <h3 class="text-lg font-semibold">${node.name}</h3>
+                ${node.enabled ? '' : '<span class="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-xs border border-red-500/30">已禁用</span>'}
+                ${node.sort_order ? `<span class="px-2 py-1 bg-gray-600 text-gray-300 rounded text-xs">#${node.sort_order}</span>` : ''}
+              </div>
+              
+              <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-400">
+                <span class="flex items-center">
+                  <i class="fa fa-server mr-2 text-gray-500"></i>
+                  ${node.server}:${node.port}
+                </span>
+                <span class="flex items-center">
+                  <i class="fa fa-exchange mr-2 text-gray-500"></i>
+                  ${(node.network || 'tcp').toUpperCase()}
+                </span>
+                ${node.tls === 'tls' ? `
+                  <span class="flex items-center">
+                    <i class="fa fa-lock mr-2 text-green-500"></i>
+                    TLS
+                  </span>
+                ` : ''}
+                ${node.sni ? `
+                  <span class="flex items-center">
+                    <i class="fa fa-globe mr-2 text-gray-500"></i>
+                    ${node.sni}
+                  </span>
+                ` : ''}
+              </div>
+
+              ${node.remarks ? `
+                <p class="text-gray-500 text-sm mt-3 flex items-center">
+                  <i class="fa fa-sticky-note mr-2"></i>
+                  ${node.remarks}
+                </p>
+              ` : ''}
+            </div>
+
+            <div class="flex items-center space-x-2">
+              <button 
+                onclick="editNode(${node.id})" 
+                class="p-3 text-blue-400 hover:bg-blue-500/20 rounded-xl transition"
+                title="编辑"
+              >
+                <i class="fa fa-edit text-lg"></i>
+              </button>
+              <button 
+                onclick="toggleNode(${node.id}, ${!node.enabled})" 
+                class="p-3 ${node.enabled ? 'text-yellow-400 hover:bg-yellow-500/20' : 'text-green-400 hover:bg-green-500/20'} rounded-xl transition"
+                title="${node.enabled ? '禁用' : '启用'}"
+              >
+                <i class="fa fa-${node.enabled ? 'pause' : 'play'} text-lg"></i>
+              </button>
+              <button 
+                onclick="deleteNode(${node.id})" 
+                class="p-3 text-red-400 hover:bg-red-500/20 rounded-xl transition"
+                title="删除"
+              >
+                <i class="fa fa-trash text-lg"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateStats(nodes) {
+      const total = nodes.length;
+      const enabled = nodes.filter(n => n.enabled === 1).length;
+      const disabled = total - enabled;
+
+      document.getElementById('totalNodes').textContent = total;
+      document.getElementById('enabledNodes').textContent = enabled;
+      document.getElementById('disabledNodes').textContent = disabled;
+    }
+
+    // ==========================================
+    // 搜索功能
+    // ==========================================
+    searchInput.addEventListener('input', (e) => {
+      const keyword = e.target.value.toLowerCase().trim();
+      
+      if (!keyword) {
+        renderNodes(ALL_NODES);
+        return;
+      }
+
+      const filtered = ALL_NODES.filter(node => 
+        node.name.toLowerCase().includes(keyword) ||
+        node.server.toLowerCase().includes(keyword) ||
+        node.type.toLowerCase().includes(keyword) ||
+        (node.remarks && node.remarks.toLowerCase().includes(keyword))
+      );
+
+      renderNodes(filtered);
+    });
+
+    // ==========================================
+    // 添加/编辑节点
+    // ==========================================
+    addNodeBtn.addEventListener('click', () => {
+      document.getElementById('modalTitle').textContent = '添加节点';
+      document.getElementById('nodeId').value = '';
+      nodeForm.reset();
+      document.getElementById('nodeEnabled').checked = true;
+      toggleProtocolFields();
+      nodeModal.classList.remove('hidden');
+    });
+
+    window.editNode = async (id) => {
+      const node = ALL_NODES.find(n => n.id === id);
+      if (!node) return;
+
+      document.getElementById('modalTitle').textContent = '编辑节点';
+      document.getElementById('nodeId').value = node.id;
+      document.getElementById('nodeName').value = node.name;
+      document.getElementById('nodeType').value = node.type;
+      document.getElementById('nodeServer').value = node.server;
+      document.getElementById('nodePort').value = node.port;
+      document.getElementById('nodeUuid').value = node.uuid || '';
+      document.getElementById('nodePassword').value = node.password || '';
+      document.getElementById('nodeEncryption').value = node.encryption || 'auto';
+      document.getElementById('nodeSsEncryption').value = node.encryption || 'aes-256-gcm';
+      document.getElementById('nodeNetwork').value = node.network || 'tcp';
+      document.getElementById('nodeTls').value = node.tls || 'none';
+      document.getElementById('nodeSni').value = node.sni || '';
+      document.getElementById('nodeHost').value = node.host || '';
+      document.getElementById('nodePath').value = node.path || '';
+      document.getElementById('nodeSort').value = node.sort_order || 0;
+      document.getElementById('nodeRemarks').value = node.remarks || '';
+      document.getElementById('nodeEnabled').checked = node.enabled === 1;
+
+      toggleProtocolFields();
+      nodeModal.classList.remove('hidden');
+    };
+
+    // 切换协议时显示/隐藏对应字段
+    function toggleProtocolFields() {
+      const type = nodeTypeSelect.value;
+      const uuidFields = document.getElementById('uuidFields');
+      const passwordFields = document.getElementById('passwordFields');
+
+      if (type === 'vmess' || type === 'vless') {
+        uuidFields.classList.remove('hidden');
+        passwordFields.classList.add('hidden');
+      } else if (type === 'trojan' || type === 'ss') {
+        uuidFields.classList.add('hidden');
+        passwordFields.classList.remove('hidden');
+      }
+    }
+
+    nodeTypeSelect.addEventListener('change', toggleProtocolFields);
+
+    // 关闭模态框
+    function closeNodeModal() {
+      nodeModal.classList.add('hidden');
+    }
+
+    cancelBtn.addEventListener('click', closeNodeModal);
+    closeModalBtn.addEventListener('click', closeNodeModal);
+
+    // 点击模态框外部关闭
+    nodeModal.addEventListener('click', (e) => {
+      if (e.target === nodeModal) closeNodeModal();
+    });
+
+    // 保存节点
+    nodeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('nodeId').value;
+      const type = document.getElementById('nodeType').value;
+      const saveBtn = document.getElementById('saveBtn');
+
+      const nodeData = {
+        name: document.getElementById('nodeName').value,
+        type: type,
+        server: document.getElementById('nodeServer').value,
+        port: parseInt(document.getElementById('nodePort').value),
+        network: document.getElementById('nodeNetwork').value,
+        tls: document.getElementById('nodeTls').value,
+        sni: document.getElementById('nodeSni').value,
+        host: document.getElementById('nodeHost').value,
+        path: document.getElementById('nodePath').value,
+        sort_order: parseInt(document.getElementById('nodeSort').value) || 0,
+        remarks: document.getElementById('nodeRemarks').value,
+        enabled: document.getElementById('nodeEnabled').checked ? 1 : 0
+      };
+
+      if (type === 'vmess' || type === 'vless') {
+        nodeData.uuid = document.getElementById('nodeUuid').value;
+        nodeData.encryption = document.getElementById('nodeEncryption').value;
+      } else if (type === 'trojan' || type === 'ss') {
+        nodeData.password = document.getElementById('nodePassword').value;
+        nodeData.encryption = document.getElementById('nodeSsEncryption').value;
+      }
+
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>保存中...';
+
+      try {
+        const url = id ? `/api/nodes/${id}` : '/api/nodes';
+        const method = id ? 'PUT' : 'POST';
+        
+        await apiRequest(url, {
+          method,
+          body: JSON.stringify(nodeData)
+        });
+
+        closeNodeModal();
+        showToast(id ? '节点更新成功' : '节点添加成功');
+        loadNodes();
+        loadSubInfo();
+      } catch (err) {
+        // 错误已在 apiRequest 中处理
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fa fa-save mr-2"></i>保存';
+      }
+    });
+
+    // ==========================================
+    // 切换节点状态
+    // ==========================================
+    window.toggleNode = async (id, enabled) => {
+      const node = ALL_NODES.find(n => n.id === id);
+      if (!node) return;
+
+      try {
+        await apiRequest(`/api/nodes/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ ...node, enabled: enabled ? 1 : 0 })
+        });
+
+        showToast(`节点已${enabled ? '启用' : '禁用'}`);
+        loadNodes();
+        loadSubInfo();
+      } catch (err) {
+        console.error('切换状态失败:', err);
+      }
+    };
+
+    // ==========================================
+    // 删除节点
+    // ==========================================
+    window.deleteNode = async (id) => {
+      const node = ALL_NODES.find(n => n.id === id);
+      if (!confirm(`确定要删除节点「${node.name}」吗？此操作不可恢复！`)) {
+        return;
+      }
+
+      try {
+        await apiRequest(`/api/nodes/${id}`, { method: 'DELETE' });
+        showToast('节点删除成功');
+        loadNodes();
+        loadSubInfo();
+      } catch (err) {
+        console.error('删除节点失败:', err);
+      }
+    };
+
+    // ==========================================
+    // 订阅链接
+    // ==========================================
+    async function loadSubInfo() {
+      try {
+        const data = await apiRequest('/api/sub/info');
+        if (data) {
+          subUrl.textContent = data.data.subUrl;
+        }
+      } catch (err) {
+        console.error('加载订阅信息失败:', err);
+      }
+    }
+
+    copySubBtn.addEventListener('click', async () => {
+      const url = subUrl.textContent;
+      
+      try {
+        await navigator.clipboard.writeText(url);
+        copySubBtn.innerHTML = '<i class="fa fa-check mr-2"></i>已复制';
+        showToast('订阅链接已复制到剪贴板');
+        
+        setTimeout(() => {
+          copySubBtn.innerHTML = '<i class="fa fa-copy mr-2"></i>复制链接';
+        }, 2000);
+      } catch (err) {
+        // 降级方案
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        copySubBtn.innerHTML = '<i class="fa fa-check mr-2"></i>已复制';
+        showToast('订阅链接已复制到剪贴板');
+        
+        setTimeout(() => {
+          copySubBtn.innerHTML = '<i class="fa fa-copy mr-2"></i>复制链接';
+        }, 2000);
+      }
+    });
+
+    refreshSubBtn.addEventListener('click', () => {
+      loadSubInfo();
+      showToast('订阅链接已刷新');
+    });
+
+    // ==========================================
+    // 修改密码
+    // ==========================================
+    changePwdBtn.addEventListener('click', () => {
+      pwdForm.reset();
+      pwdModal.classList.remove('hidden');
+    });
+
+    function closePwdModal() {
+      pwdModal.classList.add('hidden');
+    }
+
+    closePwdModalBtn.addEventListener('click', closePwdModal);
+    cancelPwdBtn.addEventListener('click', closePwdModal);
+
+    pwdModal.addEventListener('click', (e) => {
+      if (e.target === pwdModal) closePwdModal();
+    });
+
+    pwdForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const oldPassword = document.getElementById('oldPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (newPassword !== confirmPassword) {
+        showToast('两次输入的新密码不一致', 'error');
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        showToast('新密码长度不能少于6位', 'error');
+        return;
+      }
+
+      try {
+        await apiRequest('/api/change-password', {
+          method: 'POST',
+          body: JSON.stringify({ oldPassword, newPassword })
+        });
+
+        closePwdModal();
+        showToast('密码修改成功，请重新登录');
+        
+        // 自动退出登录
+        setTimeout(() => {
+          localStorage.removeItem('token');
+          TOKEN = null;
+          showAdmin();
+        }, 1500);
+      } catch (err) {
+        console.error('修改密码失败:', err);
+      }
+    });
+
+    // ==========================================
+    // 初始化
+    // ==========================================
+    if (TOKEN) {
+      showAdmin();
+    }
+
+    // 按 ESC 关闭模态框
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (!nodeModal.classList.contains('hidden')) {
+          closeNodeModal();
+        }
+        if (!pwdModal.classList.contains('hidden')) {
+          closePwdModal();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
